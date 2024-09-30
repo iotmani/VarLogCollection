@@ -49,7 +49,8 @@ Finally, you can exit the virtual environment when done using `deactivate`.
 
 ## Architecture
 An internal user accesses web applications running on hosts, nginx can sit in between to facilitate routing, potentially add caching etc.
-![User to nginx to hosts](image.png)
+
+![User to nginx to hosts](architecture.png)
 
 Typically however, a log forwarder sends log events in batches to a message bus to be ingested a central system, where machines are another tag to filter by.
 
