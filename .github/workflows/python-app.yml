@@ -5,9 +5,9 @@ name: Python Web application
 
 on:
   push:
-    branches: [ "main", "iotmani/gha" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "iotmani/gha" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
