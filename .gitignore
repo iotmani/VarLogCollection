@@ -2,6 +2,8 @@ __pycache__/
 *.py[oc]
 .vscode/
 archive/
+tests/logs/syslog/syslog.log
+tests/logs/log_collection/log_collection.log
 .coverage
 .venv*
 htmlcov

@@ -20,18 +20,6 @@ http://127.0.0.1:5100/var/log/syslog/syslog.log
 
 
 ## Development
-### Dependencies
-To make code contributions, we'll use the following packages to help purely with the development experience:
-
-* `black` for standardizing and auto-formatting any code changes you make in your IDE of choice,
-* `coverage` for unit-test coverage reports,
-* `mypy` for static type checking based on type-annotations.
-
-```
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt
-```
-
 ### Running
 Run server with a custom path to logs for testing:
 ```
@@ -46,6 +34,21 @@ Unite tests are found under the folder `tests/`. To run unit-tests:
 python -m unittest
 ```
 
+You also use `tests/logs/log_collection/log_collection.log` to [view logs from this application](http://127.0.0.1:5100/var/log/log_collection/log_collection.log) for [dogfooding](https://en.wikipedia.org/wiki/Eating_your_own_dog_food).
+
+You can also gunzip `tests/logs/syslog/syslog.log.gz` logs for testing, note that it's not tracked in due to its large size.
+
+### Dependencies
+To make code contributions, we recomming using the following packages to provide a consistent development experience:
+
+* `black` for standardizing and auto-formatting any code changes you make in your IDE of choice,
+* `coverage` for unit-test coverage reports,
+* `mypy` for static type checking based on type-annotations.
+
+```
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+```
 
 Finally, run `deactivate` to exit the virtual environment when done using `deactivate`.
 
@@ -66,3 +69,4 @@ An internal user accesses web applications running on hosts, nginx can sit in be
 
 ## Further improvements
 * Forward logs to a central system, with machines as parameters. A log forwarder job sends log events in batches to a message bus to be ingested by a central system, where machines are but another tag to potentially filter by.
+* Read larger chunks of text at a time for better IO performance, and adjust if a newline is present
