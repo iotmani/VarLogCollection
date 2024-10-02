@@ -3,7 +3,7 @@ __pycache__/
 .vscode/
 archive/
 tests/logs/syslog/syslog.log
-tests/logs/log_collection/log_collection.log
+tests/logs/log_collection/
 .coverage
 .venv*
 htmlcov

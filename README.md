@@ -21,9 +21,10 @@ http://127.0.0.1:5100/var/log/syslog/syslog.log
 
 ## Development
 ### Running
-Run server with a custom path to logs for testing:
+Run server, with a custom path to logs, and a small number of lines to ease with testing:
 ```
-LC_VAR_LOG_DIR="`pwd`/tests/logs" flask --app log_collection.app run --port=5100 --debug
+LC_MAX_RESULT_LINES=10 LC_VAR_LOG_DIR="`pwd`/tests/logs" \
+    flask --app log_collection.app run --port=5100 --debug
 ```
 
 Note: We use port 5100 as the default 5000 often clashes with a MacOS service.
