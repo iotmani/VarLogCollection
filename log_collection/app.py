@@ -25,6 +25,6 @@ def index():
 @app.route("/var/log/<path:log_path>")
 def view_log(log_path):
     log_path = safe_join(log_path)
-    app.logger.debug(f"Retrieving logs from escaped {escape(log_path)}")
+    app.logger.debug(f"Retrieving logs from {escape(log_path)}")
     reader = Log_Reader(log_path=log_path)
     return Response(reader.get_content(), mimetype="text/text")

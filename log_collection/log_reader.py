@@ -25,7 +25,7 @@ class Log_Reader:
         try:
             with open(self.log_path, mode="r") as fd:
 
-                # Start from end of log file and work backwards return most recent first
+                # Start from end of log file and work backwards, returning most recent lines first
                 fd.seek(0, os.SEEK_END)
 
                 start_position = fd.tell()
