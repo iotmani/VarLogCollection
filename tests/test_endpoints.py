@@ -45,6 +45,17 @@ class TestEndpoints(TestCase):
         )
         self.assertEqual(response.status_code, 404, "Return HTTP 404 if file not found")
 
+    def test_malicious_path_encoded_parent(self):
+        # https://owasp.org/www-community/attacks/Path_Traversal
+        response = self.client.get("/var/log/%2e%2e%2f%2e%2e%2fetc/passwd")
+        self.assertIsNotNone(self.ctx)
+        self.assertIn(
+            "not found",
+            response.get_data(as_text=True),
+            "Expected file not found error",
+        )
+        self.assertEqual(response.status_code, 404, "Return HTTP 404 if file not found")
+
     def test_malicious_path_parent(self):
         response = self.client.get("/var/log/../../etc/passwd")
         self.assertIsNotNone(self.ctx)
