@@ -1,4 +1,5 @@
 import os
+from typing import Iterator
 from .utils import get_logger_configuration, VARLOG_DIR
 
 logger = get_logger_configuration(name_suffix=__name__)
@@ -21,24 +22,24 @@ class Log_Reader:
         self.log_path = os.path.join(VARLOG_DIR, log_path)
         "Path to log file we'll be reading from"
 
-    def get_content(self) -> None:
+    def file_exists(self) -> bool:
+        return os.path.isfile(self.log_path) and os.access(self.log_path, os.R_OK)
+
+    def get_content(self) -> Iterator[str]:
         try:
             with open(self.log_path, mode="r") as fd:
-
                 # Start from end of log file and work backwards, returning most recent lines first
                 fd.seek(0, os.SEEK_END)
-
                 start_position = fd.tell()
                 current_position = start_position
                 lines_processed = 0
-
                 line = ""
 
+                # Search for content here
+                # Yield matches, allows user to see results as they're found
                 logger.debug(
                     f"{current_position} >= 0 and {lines_processed} < {self.MAX_RESULT_LINES} and {start_position} - {current_position} < {self.MAX_SCAN_SIZE_BYTES}"
                 )
-                # Search for content here
-                # Yield matches, allows user to see results as they're found
                 while (
                     current_position >= 0
                     and lines_processed < self.MAX_RESULT_LINES
@@ -52,7 +53,12 @@ class Log_Reader:
                         lines_processed += 1
                         line = ""
                     current_position -= 1
-                logger.debug(f"All done reading. current_position: {current_position}")
-        except FileNotFoundError as e:
-            logger.info(f"Log path doesn't exist: {self.log_path}")
-            raise e
+                logger.debug(f"Finished reading. current_position: {current_position}")
+        except FileNotFoundError:
+            logger.warning(f"Log file not found: {self.log_path}")
+            yield f"Log file not found: {self.log_path}"
+        except Exception as e:
+            logger.error(
+                f"Exception while reading log file: {self.log_path}, exception: {e}"
+            )
+            yield f"Error while reading log file: {self.log_path}"

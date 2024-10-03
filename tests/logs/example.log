@@ -1,0 +1,12 @@
+2024-10-02 14:21:47,834 log_collection.app DEBUG - Retrieving logs from log_collection/log_collection.log
+2024-10-02 14:21:47,835 log_collection.log_reader DEBUG - 106 >= 0 and 0 < 10 and 106 - 106 < 10485760
+2024-10-02 14:21:47,836 log_collection.log_reader DEBUG - All done reading. current_position: -1
+2024-10-02 14:21:53,099 log_collection.app DEBUG - Retrieving logs from log_collection/log_collection.log
+2024-10-02 14:21:53,100 log_collection.log_reader DEBUG - 412 >= 0 and 0 < 10 and 412 - 412 < 10485760
+2024-10-02 14:21:53,103 log_collection.log_reader DEBUG - All done reading. current_position: -1
+2024-10-02 14:22:04,460 log_collection.app DEBUG - Retrieving logs from log_collection/log_collection.log
+2024-10-02 14:22:04,460 log_collection.log_reader DEBUG - 718 >= 0 and 0 < 10 and 718 - 718 < 10485760
+2024-10-02 14:22:04,466 log_collection.log_reader DEBUG - All done reading. current_position: -1
+2024-10-02 14:49:14,537 log_collection.app DEBUG - Retrieving logs from som
+2024-10-02 14:49:14,538 log_collection.log_reader INFO - Log path doesn't exist: /Users/io/G/Career/2024 rounds/Cribl/VarLogCollection/tests/logs/som
+2024-10-02 14:50:53,832 log_collection.app DEBUG - Retrieving logs from log_collection/blah.ha

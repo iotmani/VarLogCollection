@@ -1,4 +1,4 @@
-from flask import Flask, Response
+from flask import Flask, Response, abort
 
 from markupsafe import escape
 from werkzeug.security import safe_join
@@ -27,4 +27,6 @@ def view_log(log_path):
     log_path = safe_join(log_path)
     app.logger.debug(f"Retrieving logs from {escape(log_path)}")
     reader = Log_Reader(log_path=log_path)
-    return Response(reader.get_content(), mimetype="text/text")
+    if not reader.file_exists():
+        return abort(404)
+    return Response(reader.get_content(), mimetype="text/plain")
