@@ -1,6 +1,5 @@
 import os
 from unittest import TestCase
-from itertools import zip_longest
 
 
 class TestEndpoints(TestCase):
@@ -19,24 +18,57 @@ class TestEndpoints(TestCase):
 
     def test_index(self):
         response = self.client.get("/")
-        assert response.status_code == 200
-        assert "<h3>Usage</h3>" in response.get_data(
-            as_text=True
-        ), "Expected index content to be returned"
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "<h3>Usage</h3>",
+            response.get_data(as_text=True),
+            "Expected index content to be returned",
+        )
 
     def test_view_log_simple(self):
-        response = self.client.get("/var/log/example.log")
-        assert response.status_code == 200
-        with open("tests/logs/example.log") as fd:
+        FILE_NAME = "example.log"
+        response = self.client.get(f"/var/log/{FILE_NAME}")
+        self.assertEqual(response.status_code, 200)
+        with open(f"tests/logs/{FILE_NAME}") as fd:
             lines_expected = fd.readlines()[-3:]
             for line in lines_expected:
-                assert line in response.get_data(
-                    as_text=True
-                ), "Expected exact logs content"
+                self.assertIn(
+                    line, response.get_data(as_text=True), "Expected exact logs content"
+                )
 
     def test_file_not_found(self):
         response = self.client.get("/var/log/doesnt_exist.log")
-        assert "not found" in response.get_data(
-            as_text=True
-        ), "Expected file not found error"
-        assert response.status_code == 404, "Return HTTP 404 if file not found"
+        self.assertIn(
+            "not found",
+            response.get_data(as_text=True),
+            "Expected file not found error",
+        )
+        self.assertEqual(response.status_code, 404, "Return HTTP 404 if file not found")
+
+    def test_malicious_path_parent(self):
+        response = self.client.get("/var/log/../../etc/passwd")
+        self.assertIsNotNone(self.ctx)
+        self.assertIn(
+            "not found",
+            response.get_data(as_text=True),
+            "Expected file not found error",
+        )
+        self.assertEqual(response.status_code, 404, "Return HTTP 404 if file not found")
+
+    def test_view_log_characters(self):
+        FILE_NAME = "example_characters.log"
+        response = self.client.get(f"/var/log/{FILE_NAME}")
+        self.assertEqual(response.status_code, 200)
+
+        with open(f"tests/logs/{FILE_NAME}") as fd:
+            expected = list(reversed(fd.readlines()))
+            returned = response.get_data(as_text=True).split()
+            for line_expected, line_retuned in zip(
+                expected,
+                returned,
+            ):
+                self.assertEqual(
+                    line_expected.strip(),
+                    line_retuned.strip(),
+                    "Expected exact logs content but in reverse",
+                )

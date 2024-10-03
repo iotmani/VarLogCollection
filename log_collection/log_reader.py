@@ -1,6 +1,6 @@
 import os
 from typing import Iterator
-from .utils import get_logger_configuration, VARLOG_DIR
+from log_collection.utils import get_logger_configuration, VARLOG_DIR
 
 logger = get_logger_configuration(name_suffix=__name__)
 
@@ -30,8 +30,7 @@ class Log_Reader:
             with open(self.log_path, mode="r") as fd:
                 # Start from end of log file and work backwards, returning most recent lines first
                 fd.seek(0, os.SEEK_END)
-                start_position = fd.tell()
-                current_position = start_position
+                current_position = start_position = fd.tell()
                 lines_processed = 0
                 line = ""
 
@@ -45,15 +44,24 @@ class Log_Reader:
                     and lines_processed < self.MAX_RESULT_LINES
                     and start_position - current_position < self.MAX_SCAN_SIZE_BYTES
                 ):
+                    # We can futher optimize IO here by reading larger chunks into a buffer and searching through that
                     fd.seek(current_position)
                     c = fd.read(1)
+                    # logger.debug(f"Read char pos: {current_position}, char: '{c}'")
                     line += c
-                    if c == "\n":
+                    if c == "\n" or current_position == 0:
+                        if current_position == 0:
+                            line += "\n"
+                        # logger.debug(f"Read line '{line[::-1]}'")
                         yield line[::-1]
                         lines_processed += 1
                         line = ""
                     current_position -= 1
-                logger.debug(f"Finished reading. current_position: {current_position}")
+                logger.info(f"Finished reading. current_position: {current_position}")
+                return {
+                    "read_lines": lines_processed,
+                    "read_bytes": start_position - current_position,
+                }
         except FileNotFoundError:
             logger.warning(f"Log file not found: {self.log_path}")
             yield f"Log file not found: {self.log_path}"

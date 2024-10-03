@@ -2,8 +2,8 @@ from flask import Flask, Response, abort
 
 from markupsafe import escape
 from werkzeug.security import safe_join
-from .utils import get_logger_configuration
-from .log_reader import Log_Reader
+from log_collection.utils import get_logger_configuration
+from log_collection.log_reader import Log_Reader
 
 app = Flask(__name__)
 logger = get_logger_configuration(app.logger, name_suffix=__name__)
@@ -25,7 +25,7 @@ def index():
 @app.route("/var/log/<path:log_path>")
 def view_log(log_path):
     log_path = safe_join(log_path)
-    app.logger.debug(f"Retrieving logs from {escape(log_path)}")
+    logger.debug(f"Retrieving logs from {escape(log_path)}")
     reader = Log_Reader(log_path=log_path)
     if not reader.file_exists():
         return abort(404)
