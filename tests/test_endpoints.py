@@ -1,5 +1,6 @@
 import os
 from unittest import TestCase
+from itertools import zip_longest
 
 
 class TestEndpoints(TestCase):
@@ -22,6 +23,16 @@ class TestEndpoints(TestCase):
         assert "<h3>Usage</h3>" in response.get_data(
             as_text=True
         ), "Expected index content to be returned"
+
+    def test_view_log_simple(self):
+        response = self.client.get("/var/log/example.log")
+        assert response.status_code == 200
+        with open("tests/logs/example.log") as fd:
+            lines_expected = fd.readlines()[-3:]
+            for line in lines_expected:
+                assert line in response.get_data(
+                    as_text=True
+                ), "Expected exact logs content"
 
     def test_file_not_found(self):
         response = self.client.get("/var/log/doesnt_exist.log")
