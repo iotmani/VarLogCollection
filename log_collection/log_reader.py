@@ -30,7 +30,8 @@ class Log_Reader:
             with open(self.log_path, mode="r") as fd:
                 # Start from end of log file and work backwards, returning most recent lines first
                 fd.seek(0, os.SEEK_END)
-                current_position = start_position = fd.tell()
+                start_position = fd.tell()
+                current_position = start_position - 1
                 lines_processed = 0
                 line = ""
 

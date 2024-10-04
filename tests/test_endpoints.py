@@ -36,14 +36,41 @@ class TestEndpoints(TestCase):
                     line, response.get_data(as_text=True), "Expected exact logs content"
                 )
 
+    def test_zipped_not_supported(self):
+        response = self.client.get("/var/log/zippy.tar.gz")
+        self.assertEqual(response.status_code, 400, "HTTP 400 if zipped extension")
+        self.assertIn(
+            "Zipped files are not supported",
+            response.get_data(as_text=True),
+            "Expected file zipped file error",
+        )
+        response = self.client.get("/var/log/zippy.zip")
+        self.assertEqual(response.status_code, 400, "HTTP 400 if zipped extension")
+        self.assertIn(
+            "Zipped files are not supported",
+            response.get_data(as_text=True),
+            "Expected file zipped file error",
+        )
+
+    def test_file_with_no_extension(self):
+        response = self.client.get("/var/log/plain")
+        self.assertEqual(
+            response.status_code, 404, "HTTP 404 and not 400 as passes extension check"
+        )
+        self.assertIn(
+            "file not found",
+            response.get_data(as_text=True),
+            "Expected HTTP 404 and not 400 as passes extension check",
+        )
+
     def test_file_not_found(self):
         response = self.client.get("/var/log/doesnt_exist.log")
+        self.assertEqual(response.status_code, 404, "Return HTTP 404 if file not found")
         self.assertIn(
             "not found",
             response.get_data(as_text=True),
             "Expected file not found error",
         )
-        self.assertEqual(response.status_code, 404, "Return HTTP 404 if file not found")
 
     def test_malicious_path_encoded_parent(self):
         # https://owasp.org/www-community/attacks/Path_Traversal

@@ -22,6 +22,9 @@ http://127.0.0.1:5100/var/log/syslog/syslog.log
 ## Development
 ### Running
 Run server, with a custom path to logs, and a small number of lines to ease with testing:
+
+```python -m venv .venv && source .venv/bin/activate```
+
 ```
 LC_MAX_RESULT_LINES=10 LC_VAR_LOG_DIR="`pwd`/tests/logs" \
     flask --app log_collection.app run --port=5100 --debug
@@ -47,8 +50,7 @@ To make code contributions, we recomming using the following packages to provide
 * `mypy` for static type checking based on type-annotations.
 
 ```
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 ```
 
 Finally, run `deactivate` to exit the virtual environment when done using `deactivate`.
@@ -71,3 +73,5 @@ An internal user accesses web applications running on hosts, nginx can sit in be
 ## Further improvements
 * Forward logs to a central system, with machines as parameters. A log forwarder job sends log events in batches to a message bus to be ingested by a central system, where machines are but another tag to potentially filter by.
 * Read larger chunks of text at a time for better IO performance, and adjust if a newline is present
+* Pagination based on byte offsets ranges covered, to place sensible limits without compromising on functionality
+* Check file contents for zipped, as done by 'file' linux CLI rather than naive file extension
