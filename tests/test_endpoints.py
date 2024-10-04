@@ -83,3 +83,21 @@ class TestEndpoints(TestCase):
                     line_retuned.strip(),
                     "Expected exact logs content but in reverse",
                 )
+
+    def test_search_bad_arguments_keyword(self):
+        response = self.client.get(f"/var/log/example_characters.log?keyword=1")
+        self.assertEqual(response.status_code, 400, "HTTP 400 bad request")
+        self.assertIn(
+            "Search keyword must be strictly 1 &lt; n &lt; 1001",
+            response.get_data(as_text=True),
+            "Expected error for invalid parameter keyword value",
+        )
+
+    def test_search_bad_arguments_n(self):
+        response = self.client.get(f"/var/log/example_characters.log?keyword=11&n=0")
+        self.assertEqual(response.status_code, 400, "HTTP 400 bad request")
+        self.assertIn(
+            "n must be strictly 0 &lt; n &lt; 1001",
+            response.get_data(as_text=True),
+            "Expected error for invalid parameter n value",
+        )
