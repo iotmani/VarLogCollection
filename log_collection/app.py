@@ -3,12 +3,12 @@ import os
 from markupsafe import escape
 from werkzeug.security import safe_join
 from log_collection.utils import get_logger_configuration
-from log_collection.log_reader import Log_Reader
+from log_collection.log_reader import Log_Reader, MAX_RESULT_LINES
+
+MAX_SEARCH_KEYWORD_LENGTH = 1000
 
 app = Flask(__name__)
 logger = get_logger_configuration(app.logger, name_suffix=__name__)
-MAX_NUMBER_OF_MATCHES = 1000
-MAX_SEARCH_KEYWORD_LENGTH = 1000
 
 
 @app.route("/")
@@ -27,25 +27,27 @@ def index():
 @app.route("/var/log/<path:log_path>")
 def view_log(log_path):
     log_path = safe_join(log_path)
+
+    # Validate input
+
     # Check for zipped file extensions
     if os.path.splitext(log_path)[-1] in [".gz", ".zip", ".tar"]:
         abort(400, "Zipped files are not supported")
     search_keyword = request.args.get("keyword", default=None, type=str)
-    n = request.args.get("n", default=1, type=int)
+    n = request.args.get("n", default=MAX_RESULT_LINES, type=int)
     logger.debug(
         f"Retrieving logs from {escape(log_path)}, search: {search_keyword}, n: {n}, args: {request.args}"
     )
 
-    # Validate input
     if search_keyword is not None:
-        if n < 1 or n > MAX_NUMBER_OF_MATCHES:
-            abort(400, f"n must be strictly 0 < n < {MAX_NUMBER_OF_MATCHES + 1}")
+        if n < 1 or n > MAX_RESULT_LINES:
+            abort(400, f"n must be strictly 0 < n < {MAX_RESULT_LINES + 1}")
         if len(search_keyword) < 2 or len(search_keyword) > MAX_SEARCH_KEYWORD_LENGTH:
             abort(
                 400,
                 f"Search keyword must be strictly 1 < n < {MAX_SEARCH_KEYWORD_LENGTH + 1}",
             )
-    reader = Log_Reader(log_path=log_path)
+    reader = Log_Reader(log_path, search_keyword, n)
     if not reader.file_exists():
         return abort(404, "Log file not found")
 

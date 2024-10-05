@@ -7,7 +7,8 @@ VARLOG_DIR = os.getenv("LC_VAR_LOG_DIR", "/var/log/")
 
 
 def get_logger_configuration(
-    logger=None, name_suffix="log_collection_2000"
+    logger=None,
+    name_suffix="log_collection_2000",
 ) -> "logging.Logger":
     "Centralized place for application logs configuration"
 
@@ -24,5 +25,5 @@ def get_logger_configuration(
         logger = logging.Logger(name_suffix)
     logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     return logger

@@ -124,7 +124,27 @@ class TestEndpoints(TestCase):
         response = self.client.get(f"/var/log/example_characters.log?keyword=11&n=0")
         self.assertEqual(response.status_code, 400, "HTTP 400 bad request")
         self.assertIn(
-            "n must be strictly 0 &lt; n &lt; 1001",
+            "n must be strictly 0 &lt; n &lt; 100001",
             response.get_data(as_text=True),
             "Expected error for invalid parameter n value",
+        )
+
+    def test_no_keyword_found_in_response(self):
+        response = self.client.get(f"/var/log/example_characters.log?keyword=00")
+        self.assertEqual(
+            response.status_code, 200, "HTTP 200 expected regardless of results"
+        )
+        self.assertEqual(
+            "",
+            response.get_data(as_text=True),
+            "Expected empty results in response due to not matching",
+        )
+
+    def test_keyword_with_results(self):
+        response = self.client.get(f"/var/log/example_characters.log?keyword=a1")
+        self.assertEqual(response.status_code, 200, "Keyword is in content")
+        self.assertIn(
+            "a1",
+            response.get_data(as_text=True),
+            "Expected search keyword in response",
         )
