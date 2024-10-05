@@ -4,6 +4,7 @@ __pycache__/
 archive/
 tests/logs/syslog/syslog.log
 tests/logs/log_collection/
+tests/logs/log_collection.log
 .coverage
 .venv*
 htmlcov

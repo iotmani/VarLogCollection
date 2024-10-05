@@ -1,6 +1,7 @@
+from argparse import ArgumentParser
 import os
 from typing import Iterator
-from log_collection.utils import get_logger_configuration, VARLOG_DIR
+from log_collection.utils import get_logger_configuration
 
 logger = get_logger_configuration(name_suffix=__name__)
 
@@ -19,7 +20,7 @@ MAX_SCAN_SIZE_BYTES = int(
 class Log_Reader:
     def __init__(self, log_path: str, search_keyword: str, num_of_matches: int) -> None:
 
-        self.log_path = os.path.join(VARLOG_DIR, log_path)
+        self.log_path = log_path
         "Path to log file we'll be reading from"
 
         self.search_keyword = search_keyword
@@ -32,7 +33,6 @@ class Log_Reader:
         return os.path.isfile(self.log_path) and os.access(self.log_path, os.R_OK)
 
     def _has_keyword_match(self, line) -> bool:
-        logger.debug(f"Is reversed {self.search_keyword} in line '{line}'")
         return self.search_keyword[::-1] in line
 
     def get_content(self) -> Iterator[str]:
@@ -71,11 +71,9 @@ class Log_Reader:
                         lines_processed += 1
                         line = ""
                     current_position -= 1
-                logger.debug(f"Finished reading. current_position: {current_position}")
-                return {
-                    "read_lines": lines_processed,
-                    "read_bytes": start_position - current_position,
-                }
+                logger.info(
+                    f"Finished reading. Stats: read_lines: {lines_processed}, read_bytes: {start_position - current_position}"
+                )
         except FileNotFoundError:
             logger.warning(f"Log file not found: {self.log_path}")
             yield f"Log file not found: {self.log_path}"
@@ -84,3 +82,17 @@ class Log_Reader:
                 f"Exception while reading log file: {self.log_path}, exception: {e}"
             )
             yield f"Error while reading log file: {self.log_path}"
+
+
+if __name__ == "__main__":
+    argsParser = ArgumentParser(description="Parse logs")
+    argsParser.add_argument("file", help="Log path, e.g. tests/logs/syslog/syslog.log")
+    argsParser.add_argument("--keyword", help="Keyword to search for")
+    argsParser.add_argument(
+        "--n", help="Number of matches to find", type=int, default=1_000_000_000
+    )
+    args = argsParser.parse_args()
+    log_reader = Log_Reader(
+        log_path=args.file, search_keyword=args.keyword, num_of_matches=args.n
+    )
+    [print(line) for line in log_reader.get_content()]

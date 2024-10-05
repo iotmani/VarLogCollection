@@ -16,14 +16,12 @@ def get_logger_configuration(
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(formatter)
 
-    file_handler = logging.FileHandler(
-        f"{VARLOG_DIR}/log_collection/log_collection.log"
-    )
+    file_handler = logging.FileHandler("tests/logs/log_collection.log")
     file_handler.setFormatter(formatter)
 
     if not logger:
         logger = logging.Logger(name_suffix)
     logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     return logger
