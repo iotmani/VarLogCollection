@@ -23,5 +23,5 @@ def get_logger_configuration(
         logger = logging.Logger(name_suffix)
     logger.addHandler(stream_handler)
     logger.addHandler(file_handler)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     return logger

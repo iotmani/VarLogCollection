@@ -1,11 +1,12 @@
 from argparse import ArgumentParser
 import os
 from typing import Iterator
+
 from log_collection.utils import get_logger_configuration
 
 logger = get_logger_configuration(name_suffix=__name__)
 
-MAX_RESULT_LINES = int(os.getenv("LC_MAX_RESULT_LINES", 100_000))
+MAX_RESULT_LINES = int(os.getenv("LC_MAX_RESULT_LINES", 100_000_000))
 "Maximum number of result lines at a time"
 
 # MAX_SCAN_SIZE_BYTES may seem redundant and rarely used compared to MAX_RESULT_LINES,
@@ -15,6 +16,10 @@ MAX_SCAN_SIZE_BYTES = int(
     os.getenv("LC_MAX_SCAN_SIZE_BYTES", MAX_RESULT_LINES * 1024 * 1024)
 )
 "Scan throguh a maximum of ~100GB of logs at a time by default"
+
+
+BLOCK_SIZE = 2 * 1024 * 1024
+"2Mb default block size to read at a time"
 
 
 class Log_Reader:
@@ -33,7 +38,8 @@ class Log_Reader:
         return os.path.isfile(self.log_path) and os.access(self.log_path, os.R_OK)
 
     def _has_keyword_match(self, line) -> bool:
-        return self.search_keyword[::-1] in line
+        # TODO: pre-process the search keyword and Implement Knuth–Morris–Pratt
+        return self.search_keyword in line
 
     def get_content(self) -> Iterator[str]:
 
@@ -42,12 +48,10 @@ class Log_Reader:
                 # Start from end of log file and work backwards, returning most recent lines first
                 fd.seek(0, os.SEEK_END)
                 start_position = fd.tell()
-                current_position = start_position - 1
+                current_position = max(0, start_position - BLOCK_SIZE)
                 lines_processed = 0
                 number_of_matches = 0
-                line = ""
 
-                # Search for content here
                 # Yield matches, allows user to see results as they're found
                 while (
                     current_position >= 0
@@ -55,22 +59,40 @@ class Log_Reader:
                     and start_position - current_position < MAX_SCAN_SIZE_BYTES
                     and number_of_matches < self.num_of_matches_expected
                 ):
-                    # We can futher optimize IO here by reading larger chunks into a buffer and searching through that
+                    # Start reading from the end, we want last lines first
                     fd.seek(current_position)
-                    c = fd.read(1)
-                    # logger.debug(f"Read char pos: {current_position}, char: '{c}'")
-                    line += c
-                    if c == "\n" or current_position == 0:
-                        if current_position == 0:
-                            line += "\n"
+                    # Optimize IO by reading larger chunks into a buffer and searching through that
+                    block_read = fd.read(BLOCK_SIZE)
 
+                    # If nothing read, nothing to do
+                    if not block_read:
+                        break
+
+                    next_newline_pos = block_read.find("\n")
+
+                    # In case we jump into the middle of a line, move cursor's current_position to the next "\n"
+                    # so the next block will end on a new line:
+                    # Block1: ...ABCD\nEFGH\nIJK -> EFGH\nIJK [EOF]
+                    # Block2: [start] 1235\nABCD\n
+                    if current_position != 0:
+                        if next_newline_pos != -1:
+                            current_position = max(
+                                0,
+                                (current_position - len(block_read) + next_newline_pos),
+                            )
+                        else:
+                            current_position -= len(block_read)
+                            next_newline_pos = 0
+
+                    # Split block read into separate lines, in reversed order making last one top
+                    for line_read in block_read.split("\n")[::-1]:
                         # Naive search
-                        if self.search_keyword is None or self._has_keyword_match(line):
+                        if self.search_keyword is None or self._has_keyword_match(
+                            line_read
+                        ):
                             number_of_matches += 1
-                            yield line[::-1]
+                            yield line_read + "\n"
                         lines_processed += 1
-                        line = ""
-                    current_position -= 1
                 logger.info(
                     f"Finished reading. Stats: read_lines: {lines_processed}, read_bytes: {start_position - current_position}"
                 )

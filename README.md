@@ -57,6 +57,25 @@ This will list function calls by total time spent as well as display total numbe
     40/11    0.002    0.000    0.008    0.001 _parser.py:512(_parse)
 ```
 
+It's useful to contrast the above with `cat`
+```
+time cat tests/logs/syslog/syslog.log | wc
+```
+
+*** Current status ***
+Currently we're ~10x slower than `cat` for outputting matches.
+```
+(.venv) io@MacBookPro VarLogCollection % time cat tests/logs/syslog/syslog.log | wc                           
+ 15875552 285601195 1928561085
+cat tests/logs/syslog/syslog.log  0.10s user 0.76s system 9% cpu 9.170 total
+wc  8.93s user 0.10s system 98% cpu 9.169 total
+(.venv) io@MacBookPro VarLogCollection % time python -m log_collection.log_reader tests/logs/syslog/syslog.log | wc
+ 200020379 1799165071 12248817629
+python3 -m log_collection.log_reader tests/logs/syslog/syslog.log  68.92s user 9.81s system 91% cpu 1:25.98 total
+wc  57.85s user 1.00s system 68% cpu 1:25.98 total
+```
+
+
 ### Testing
 Unit tests are found under the folder `tests/`. To run unit-tests:
 ```
@@ -125,6 +144,6 @@ An internal user accesses web applications running on hosts, nginx can sit in be
 
 ## Further improvements
 * Forward logs to a central system, with machines as parameters. A log forwarder job sends log events in batches to a message bus to be ingested by a central system, where machines are but another tag to potentially filter by.
-* Read larger chunks of text at a time for better IO performance, and adjust if a newline is present
+* Implement KMP for searching within a line.
 * Pagination based on byte offsets ranges covered, to place sensible limits without compromising on functionality
 * Check file contents for zipped, as done by 'file' linux CLI rather than naive file extension
