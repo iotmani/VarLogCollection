@@ -8,8 +8,8 @@ logger = get_logger_configuration(name_suffix=__name__)
 class Log_Reader:
     def __init__(self, log_path: str) -> None:
 
-        self.MAX_RESULT_LINES = int(os.getenv("LC_MAX_RESULT_LINES", 10_000))
-        "Return maximum of 10k results at a time"
+        self.MAX_RESULT_LINES = int(os.getenv("LC_MAX_RESULT_LINES", 100_000))
+        "Return a maximum of number results at a time"
 
         # MAX_SCAN_SIZE_BYTES may seem redundant and rarely used compared to MAX_RESULT_LINES,
         # it'll act as a short-circuit and provides extra security in case individual log lines have inhumane sizes,
@@ -17,7 +17,7 @@ class Log_Reader:
         self.MAX_SCAN_SIZE_BYTES = int(
             os.getenv("LC_MAX_SCAN_SIZE_BYTES", self.MAX_RESULT_LINES * 1024 * 1024)
         )
-        "Scan throguh a maximum of ~10GB of logs at a time by default"
+        "Scan throguh a maximum of ~100GB of logs at a time by default"
 
         self.log_path = os.path.join(VARLOG_DIR, log_path)
         "Path to log file we'll be reading from"
