@@ -93,6 +93,11 @@ class Log_Reader:
                             number_of_matches += 1
                             yield line_read + "\n"
                         lines_processed += 1
+
+                    # All done reading
+                    if current_position == 0:
+                        break
+
                 logger.info(
                     f"Finished reading. Stats: read_lines: {lines_processed}, read_bytes: {start_position - current_position}"
                 )

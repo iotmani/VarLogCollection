@@ -124,7 +124,7 @@ class TestEndpoints(TestCase):
         response = self.client.get(f"/var/log/example_characters.log?keyword=11&n=0")
         self.assertEqual(response.status_code, 400, "HTTP 400 bad request")
         self.assertIn(
-            "n must be strictly 0 &lt; n &lt; 100001",
+            "n must be strictly 0 &lt; n &lt; 100000001",
             response.get_data(as_text=True),
             "Expected error for invalid parameter n value",
         )
