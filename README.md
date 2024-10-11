@@ -133,7 +133,31 @@ An internal user accesses web applications running on hosts, nginx can sit in be
 
 ![User to nginx to hosts](architecture.png)
 
+### Docker 
+You can run it using docker, with nginx as the http proxy as per the diagram above, using the following commands:
 
+```
+# Build docker image
+docker build -t iotmani/log_collection . 
+
+# Run two "machines" and nginx as http proxy
+docker run --rm --name nginx -d -v "`pwd`/tests/nginx.conf":/etc/nginx/nginx.conf -p 8000:80 nginx                          
+docker run --rm --name varlog1 -d iotmani/log_collection 
+docker run --rm --name varlog2 -d iotmani/log_collection 
+
+# Get IPs
+docker inspect varlog2 varlog1 | grep IPAddress
+# Alternative: docker ps -qn 2 | xargs -I '{}' docker exec {} ifconfig eth0 | grep inet
+
+# Reach said machines, example:
+# http://localhost:8000/machine/172.17.0.3:5100/var/log/log_collection.log
+# http://localhost:8000/machine/172.17.0.4:5100/var/log/log_collection.log?keyword=mykeyword&n=3
+```
+
+```
+# Cleanup containers
+docker rm nginx varlog1 varlog2 -f
+```
 
 ## Out of scope
 * Full stack set up, such as the http proxy/load balancer (e.g. nginx), uwsgi (e.g. uvicorn), Kubernetes manifests or VMs Terraform definition

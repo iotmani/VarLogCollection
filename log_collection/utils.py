@@ -16,7 +16,9 @@ def get_logger_configuration(
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(formatter)
 
-    file_handler = logging.FileHandler("tests/logs/log_collection.log")
+    file_output_path = VARLOG_DIR if os.access(VARLOG_DIR, os.W_OK) else "."
+
+    file_handler = logging.FileHandler(f"{file_output_path}/log_collection.log")
     file_handler.setFormatter(formatter)
 
     if not logger:
