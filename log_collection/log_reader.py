@@ -94,6 +94,9 @@ class Log_Reader:
                             yield line_read + "\n"
                         lines_processed += 1
 
+                        if number_of_matches >= self.num_of_matches_expected:
+                            break
+
                     # All done reading
                     if current_position == 0:
                         break
